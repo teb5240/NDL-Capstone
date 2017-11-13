@@ -15,6 +15,6 @@ timeLength = length(data_eeg);
 time = 1:timeLength;
 
 figure
-plot(time, data_eeg(:,2))
+plot(time, data_eeg)
 hold on
 xticks(0:10*samplingRate:timeLength)
