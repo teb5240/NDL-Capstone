@@ -1,5 +1,5 @@
 # NDL-Capstone
 
-##MATLAB
+## MATLAB
 
-##Python
+## Python
