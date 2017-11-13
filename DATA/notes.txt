@@ -1,4 +1,0 @@
-C09 S01 0304 - Control subject -- random, sparse blink artifact
-P50 S01 0304 - Patient subect -- blink artifacts between trials (plot data and b.StimulusCode together).  Also very prominent EKG artifact.
-
-for channel info, check c.ChannelNames.Value
