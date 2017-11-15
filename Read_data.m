@@ -18,3 +18,6 @@ figure
 plot(time, data_eeg)
 hold on
 xticks(0:10*samplingRate:timeLength)
+
+%% Filter out EOG artifacts
+
