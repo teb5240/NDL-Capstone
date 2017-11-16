@@ -1,5 +1,4 @@
 clc
-close all
 clear
 
 %% Read in EEG g.Nautilus data from Andrew's systems
@@ -21,3 +20,5 @@ xticks(0:10*samplingRate:timeLength)
 
 %% Filter out EOG artifacts
 
+OL = identify_eog_channels(filename);
+[R, S2] = regress_eog(filename);

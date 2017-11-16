@@ -5,7 +5,7 @@ clear
 cd 'C:\Users\tbaum\OneDrive\Documents\NDL Capstone\Data';
 filename = 'C09S001R03.dat';
 
-chosenChannel = 2;
+chosenChannel = 20;
 
 [data_eeg,B,C,D] = load_bcidat(filename,'-calibrated');
 
@@ -65,7 +65,8 @@ Dw = ArtWeights2*Data;
 
 %Plot to see if you removed blinks from channel 1
 subplot(2, 1, 2)
-Dw = Dw';
-plot(time, Dw(:, chosenChannel))
+Data = Data';
+plot(time, Data(:,chosenChannel))
 allAxes = findall(0,'type','axes');
 linkaxes(allAxes)
+
