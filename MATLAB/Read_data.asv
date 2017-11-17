@@ -1,11 +1,12 @@
 clc
 clear
+close all
 
 %% Read in EEG g.Nautilus data from Andrew's systems
 cd 'C:\Users\tbaum\OneDrive\Documents\NDL Capstone\Data';
 filename = 'C09S001R03.dat';
 
-chosenChannel = 20;
+chosenChannel = 2;
 
 [data_eeg,B,C,D] = load_bcidat(filename,'-calibrated');
 
@@ -16,8 +17,8 @@ timeLength = length(data_eeg);
 time = 1:timeLength;
 
 figure(1)
-subplot(2, 1, 1)
 plot(time, data_eeg(:,chosenChannel))
+hold on
 
 %% Filter out EOG artifacts
 
@@ -64,9 +65,172 @@ EOGD = Data(:,ArtLoc);
 Dw = ArtWeights2*Data;
 
 %Plot to see if you removed blinks from channel 1
-subplot(2, 1, 2)
-Data = Data';
-plot(time, Data(:,chosenChannel))
+Dw = Dw';
+plot(time, Dw(:, chosenChannel))
 allAxes = findall(0,'type','axes');
 linkaxes(allAxes)
+
+
+%% Get mu data
+params.Fs = 256;
+[bb, aa] = butter(4,[8 12]/(params.Fs/2),'bandpass');
+mu = filtfilt(bb,aa,data_eeg);
+
+channels = C.ChannelNames.Value;
+
+figure(2)
+
+%% plot channels 1:8 in mu
+for i = 1:8
+    data = mu(:,i);
+    movingwin = [1 .5]; %[winsize winstep]
+    params.tapers = [5 9]; %[timeBandwidthProduct numOfTapers]
+
+    [S1, t1, f1] = mtspecgramc(data, movingwin, params);
+
+    % plot spectrogram
+    subplot(8, 1, i)
+    plot_matrix(S1,t1,f1);
+    ylim([0 40]) % set y-limits
+    xlabel('Time(sec)', 'fontsize',5);
+    ylabel('Frequency (Hz)', 'fontsize',5);
+    caxis([-25 18]);
+    set(gca,'FontSize',5)
+    map = jet;
+    colormap(map)
+    str = channels(i);
+    title(str, 'fontsize',5)
+    hold on
+    time = (1/params.Fs)*(1:length(data_eeg));
+end
+
+figure(3)
+
+%% plot channels 1:8 in normal
+for i = 1:8
+    data = data_eeg(:,i);
+    movingwin = [1 .5]; %[winsize winstep]
+    params.tapers = [5 9]; %[timeBandwidthProduct numOfTapers]
+
+    [S1, t1, f1] = mtspecgramc(data, movingwin, params);
+
+    % plot spectrogram
+    subplot(8, 1, i)
+    plot_matrix(S1,t1,f1);
+    ylim([0 40]) % set y-limits
+    xlabel('Time(sec)', 'fontsize',5);
+    ylabel('Frequency (Hz)', 'fontsize',5);
+    caxis([-25 18]);
+    map = jet;
+    colormap(map)
+    str = channels(i);
+    title(str, 'fontsize',5)
+    set(gca,'FontSize',5)
+    hold on
+    time = (1/params.Fs)*(1:length(data_eeg));
+end
+
+figure(4)
+
+%% plot channels 9-16 in mu
+for i = 9:16
+    data = mu(:,i);
+    movingwin = [1 .5]; %[winsize winstep]
+    params.tapers = [5 9]; %[timeBandwidthProduct numOfTapers]
+
+    [S1, t1, f1] = mtspecgramc(data, movingwin, params);
+
+    % plot spectrogram
+    subplot(8, 1, i-8)
+    plot_matrix(S1,t1,f1);
+    ylim([0 40]) % set y-limits
+    xlabel('Time(sec)', 'fontsize',5);
+    ylabel('Frequency (Hz)', 'fontsize',5);
+    caxis([-25 18]);
+    set(gca,'FontSize',5)
+    map = jet;
+    colormap(map)
+    str = channels(i);
+    title(str, 'fontsize',5)
+    hold on
+    time = (1/params.Fs)*(1:length(data_eeg));
+end
+
+figure(5)
+
+%% plot channels 9:16 in normal
+for i = 9:16
+    data = data_eeg(:,i);
+    movingwin = [1 .5]; %[winsize winstep]
+    params.tapers = [5 9]; %[timeBandwidthProduct numOfTapers]
+
+    [S1, t1, f1] = mtspecgramc(data, movingwin, params);
+
+    % plot spectrogram
+    subplot(8, 1, i-8)
+    plot_matrix(S1,t1,f1);
+    ylim([0 40]) % set y-limits
+    xlabel('Time(sec)', 'fontsize',5);
+    ylabel('Frequency (Hz)', 'fontsize',5);
+    caxis([-25 18]);
+    map = jet;
+    colormap(map)
+    str = channels(i);
+    title(str, 'fontsize',5)
+    set(gca,'FontSize',5)
+    hold on
+    time = (1/params.Fs)*(1:length(data_eeg));
+end
+
+figure(6)
+
+%% plot channels 1:8 in normal of filtered data
+for i = 1:8
+    data = Dw(:,i);
+    movingwin = [1 .5]; %[winsize winstep]
+    params.tapers = [5 9]; %[timeBandwidthProduct numOfTapers]
+
+    [S1, t1, f1] = mtspecgramc(data, movingwin, params);
+
+    % plot spectrogram
+    subplot(8, 1, i)
+    plot_matrix(S1,t1,f1);
+    ylim([0 40]) % set y-limits
+    xlabel('Time(sec)', 'fontsize',5);
+    ylabel('Frequency (Hz)', 'fontsize',5);
+    caxis([-25 18]);
+    map = jet;
+    colormap(map)
+    str = channels(i);
+    title(str, 'fontsize',5)
+    set(gca,'FontSize',5)
+    hold on
+    time = (1/params.Fs)*(1:length(data_eeg));
+end
+
+figure(7)
+
+%% plot channels 9:16 in normal of filtered data
+for i = 9:16
+    data = Dw(:,i);
+    movingwin = [1 .5]; %[winsize winstep]
+    params.tapers = [5 9]; %[timeBandwidthProduct numOfTapers]
+
+    [S1, t1, f1] = mtspecgramc(data, movingwin, params);
+
+    % plot spectrogram
+    subplot(8, 1, i-8)
+    plot_matrix(S1,t1,f1);
+    ylim([0 40]) % set y-limits
+    xlabel('Time(sec)', 'fontsize',5);
+    ylabel('Frequency (Hz)', 'fontsize',5);
+    caxis([-25 18]);
+    map = jet;
+    colormap(map)
+    str = channels(i);
+    title(str, 'fontsize',5)
+    set(gca,'FontSize',5)
+    hold on
+    time = (1/params.Fs)*(1:length(data_eeg));
+end
 
