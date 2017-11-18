@@ -1,3 +1,5 @@
+%% Frequency Analysis Version
+
 clc
 clear
 close all
@@ -69,7 +71,6 @@ Dw = Dw';
 plot(time, Dw(:, chosenChannel))
 allAxes = findall(0,'type','axes');
 linkaxes(allAxes)
-
 
 %% Get mu data
 params.Fs = 256;
