@@ -1,17 +1,15 @@
-function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)
-% Multi-taper time-frequency spectrum - continuous process
+function [S,t,f,R,Serr]=mtspecgrampt(data,movingwin,params,fscorr)
+% Multi-taper time-frequency spectrum - point process times
 %
 % Usage:
-% [S,t,f,Serr]=mtspecgramc(data,movingwin,params)
+%
+% [S,t,f,R,Serr]=mtspecgrampt(data,movingwin,params,fscorr)
 % Input: 
-% Note units have to be consistent. Thus, if movingwin is in seconds, Fs
-% has to be in Hz. see chronux.m for more information.
-%       data        (in form samples x channels/trials) -- required
-%       movingwin         (in the form [window winstep] i.e length of moving
-%                                                 window and step size)
-%                                                 Note that units here have
-%                                                 to be consistent with
-%                                                 units of Fs - required
+%       data        (structure array of spike times with dimension channels/trials; 
+%                   also accepts 1d array of spike times) -- required
+%       movingwin         (in the form [window,winstep] i.e length of moving
+%                                                 window and step size.
+%                                                 
 %       params: structure with fields tapers, pad, Fs, fpass, err, trialave
 %       - optional
 %           tapers : precalculated tapers from dpss or in the one of the following
@@ -46,57 +44,61 @@ function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)
 %           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars
 %                                   [0 p] or 0 - no error bars) - optional. Default 0.
 %           trialave (average over trials/channels when 1, don't average when 0) - optional. Default 0
+%       fscorr   (finite size corrections, 0 (don't use finite size corrections) or 
+%                1 (use finite size corrections) - optional
+%                (available only for spikes). Defaults 0.
+%
 % Output:
-%       S       (spectrum in form time x frequency x channels/trials if trialave=0; 
-%               in the form time x frequency if trialave=1)
+%       S       (spectrogram with dimensions time x frequency x channels/trials if trialave=0; 
+%               dimensions time x frequency if trialave=1)
 %       t       (times)
 %       f       (frequencies)
-%       Serr    (error bars) only for err(1)>=1
+%
+%       Serr    (error bars) - only if err(1)>=1
 
 if nargin < 2; error('Need data and window parameters'); end;
 if nargin < 3; params=[]; end;
 
+[tapers,pad,Fs,fpass,err,trialave,params]=getparams(params);
 if length(params.tapers)==3 & movingwin(1)~=params.tapers(2);
     error('Duration of data in params.tapers is inconsistent with movingwin(1), modify params.tapers(2) to proceed')
 end
 
-[tapers,pad,Fs,fpass,err,trialave,params]=getparams(params);
-if nargout > 3 && err(1)==0; 
-%   Cannot compute error bars with err(1)=0. change params and run again.
-    error('When Serr is desired, err(1) has to be non-zero.');
-end;
 data=change_row_to_column(data);
-[N,Ch]=size(data);
+if isstruct(data); Ch=length(data); end;
+if nargin < 4 || isempty(fscorr); fscorr=0; end;
+if nargout > 4 && err(1)==0; error('Cannot compute errors with err(1)=0'); end;
+
+[mintime,maxtime]=minmaxsptimes(data);
+tn=(mintime+movingwin(1)/2:movingwin(2):maxtime-movingwin(1)/2);
 Nwin=round(Fs*movingwin(1)); % number of samples in window
-Nstep=round(movingwin(2)*Fs); % number of samples to step through
 nfft=max(2^(nextpow2(Nwin)+pad),Nwin);
 f=getfgrid(Fs,nfft,fpass); Nf=length(f);
 params.tapers=dpsschk(tapers,Nwin,Fs); % check tapers
-
-winstart=1:Nstep:N-Nwin+1;
-nw=length(winstart); 
+nw=length(tn);
 
 if trialave
     S = zeros(nw,Nf);
+    R = zeros(nw,1);
     if nargout==4; Serr=zeros(2,nw,Nf); end;
 else
     S = zeros(nw,Nf,Ch);
+    R = zeros(nw,Ch);
     if nargout==4; Serr=zeros(2,nw,Nf,Ch); end;
 end
 
 for n=1:nw;
-   indx=winstart(n):winstart(n)+Nwin-1;
-   datawin=data(indx,:);
-   if nargout==4
-     [s,f,serr]=mtspectrumc(datawin,params);
+   t=linspace(tn(n)-movingwin(1)/2,tn(n)+movingwin(1)/2,Nwin);
+   datawin=extractdatapt(data,[t(1) t(end)]);
+   if nargout==5;
+     [s,f,r,serr]=mtspectrumpt(datawin,params,fscorr,t);
      Serr(1,n,:,:)=squeeze(serr(1,:,:));
      Serr(2,n,:,:)=squeeze(serr(2,:,:));
    else
-     [s,f]=mtspectrumc(datawin,params);
-   end
+     [s,f,r]=mtspectrumpt(datawin,params,fscorr,t);
+   end;
    S(n,:,:)=s;
+   R(n,:)=r;
 end;
-S=squeeze(S); 
-if nargout==4;Serr=squeeze(Serr);end;
-winmid=winstart+round(Nwin/2);
-t=winmid/Fs;
+t=tn;
+S=squeeze(S); R=squeeze(R); if nargout==5; Serr=squeeze(Serr);end
