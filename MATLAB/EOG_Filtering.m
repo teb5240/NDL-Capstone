@@ -56,7 +56,7 @@ close all       % close all figures currently open
 cd 'C:\Users\tbaum\OneDrive\Documents\NDL Capstone\Data';   % open path with data file in it
 filename = 'C09S001R03.dat';                                % pick data file
 
-chosenChannel = 2;                                          % which channel we pick to visualize the data filtering algorithm
+chosenChannel = 1;                                          % which channel we pick to visualize the data filtering algorithm
 
 [data_eeg, B, C, D] = load_bcidat(filename,'-calibrated');  % loading the data into the workspace
 
@@ -69,7 +69,7 @@ figure(1)                                           % initializing the figure we
 plot(time, data_eeg(:,chosenChannel))               % plot data before filtering
 xlabel('sec')                                       % specifying the x-axis units
 ylabel('\muV')                                      % specifying the y-axis units
-title('Difference from EOG Filtering')              % specifying the title of the graph
+title('Difference after EOG Filtering')             % specifying the title of the graph
 hold on                                             % when we plot something else, this function will make sure it does not plot on a new graph
 
 %% Filter out EOG artifacts
@@ -91,7 +91,7 @@ Arange = -.5*fs : .5*fs;
 artInt = repmat(artInt',1,length(Arange)) + repmat(Arange,length(artInt),1); % increases the artifact indices to extend  +- .5 seconds past the orignial data
 artInt = artInt';
 artInt = unique(artInt(:));                      % makes sure no indices are repeated
-artInt = artInt(artInt>0 & artInt<size(Data,2)); % remove all indice values outside of the data sample range
+artInt = artInt(artInt>0 & artInt<size(Data,2)); % remove all index values outside of the data sample range
 artLoc = logical(zeros(size(Data,2),1));         % make a logic vector of all false
 artLoc(artInt) = true;                           % make the artifact indices into trues for the logical vector which then specifies where the artifacts are
 
