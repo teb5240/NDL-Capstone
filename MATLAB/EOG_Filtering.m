@@ -53,12 +53,13 @@ clear           % clear workspace variables
 close all       % close all figures currently open
 
 %% Read in EEG g.Nautilus data from Andrew's systems
-cd 'C:\Users\tbaum\OneDrive\Documents\NDL Capstone\Data';   % open path with data file in it
+% cd 'C:\Users\tbaum\OneDrive\Documents\NDL Capstone\Data';   % open path with data file in it
 filename = 'C09S001R03.dat';                                % pick data file
 
 chosenChannel = 1;                                          % which channel we pick to visualize the data filtering algorithm
 
-[data_eeg, B, C, D] = load_bcidat(filename,'-calibrated');  % loading the data into the workspace
+[data_eeg, B, C, D] = load_bcidat(filename);  % loading the data into the workspace
+% [data_eeg, B, C, D] = load_bcidat(filename,'-calibrated');  % loading the data into the workspace
 
 %% Plot initial data
 
